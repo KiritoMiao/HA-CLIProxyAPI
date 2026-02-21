@@ -35,6 +35,6 @@ class CLIProxyAPIEntity(CoordinatorEntity[CLIProxyAPIDataUpdateCoordinator]):
         return DeviceInfo(
             identifiers={(DOMAIN, self._entry.entry_id)},
             name=self._entry.title or "CLIProxyAPI",
-            manufacturer="router-for-me",
+            manufacturer="Kirito",
             configuration_url=self._entry.data.get(CONF_BASE_URL),
         )

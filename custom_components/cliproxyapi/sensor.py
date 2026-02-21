@@ -55,6 +55,24 @@ def _sanitize_unique_fragment(raw: str) -> str:
     return sanitized or "unknown"
 
 
+def _get_key_usage_entry(data: dict[str, Any], key_id: str) -> dict[str, Any]:
+    """Return key usage aggregate for one auth index."""
+    usage = data.get("key_usage", {})
+    if not isinstance(usage, dict):
+        return {}
+    key_data = usage.get(key_id, {})
+    return key_data if isinstance(key_data, dict) else {}
+
+
+def _get_model_usage_entry(data: dict[str, Any], model_name: str) -> dict[str, Any]:
+    """Return model token aggregate for one model name."""
+    usage = data.get("model_token_usage", {})
+    if not isinstance(usage, dict):
+        return {}
+    model_data = usage.get(model_name, {})
+    return model_data if isinstance(model_data, dict) else {}
+
+
 @dataclass(frozen=True, kw_only=True)
 class CLIProxyAPISensorDescription(SensorEntityDescription):
     """Describes a CLIProxyAPI sensor entity."""
@@ -170,20 +188,74 @@ async def async_setup_entry(
     )
 
     created_key_sensors: set[str] = set()
+    created_model_sensors: set[str] = set()
 
     @callback
     def _async_add_missing_key_sensors() -> None:
         payload = coordinator.data or {}
         key_usage = payload.get("key_usage", {})
+        model_usage = payload.get("model_token_usage", {})
         if not isinstance(key_usage, dict):
             return
+        if not isinstance(model_usage, dict):
+            model_usage = {}
 
-        new_entities: list[CLIProxyAPIKeyUsageSensor] = []
+        new_entities: list[SensorEntity] = []
         for key_id in key_usage:
             if not isinstance(key_id, str) or key_id in created_key_sensors:
                 continue
             created_key_sensors.add(key_id)
-            new_entities.append(CLIProxyAPIKeyUsageSensor(entry, coordinator, key_id))
+            new_entities.extend(
+                [
+                    CLIProxyAPIKeyUsageSensor(entry, coordinator, key_id),
+                    CLIProxyAPIKeyTokenSensor(entry, coordinator, key_id),
+                    CLIProxyAPIKeyTokenSpendSensor(
+                        entry,
+                        coordinator,
+                        key_id,
+                        "input_tokens",
+                        "input tokens",
+                        "mdi:arrow-down-bold-box-outline",
+                    ),
+                    CLIProxyAPIKeyTokenSpendSensor(
+                        entry,
+                        coordinator,
+                        key_id,
+                        "output_tokens",
+                        "output tokens",
+                        "mdi:arrow-up-bold-box-outline",
+                    ),
+                    CLIProxyAPIKeyTokenSpendSensor(
+                        entry,
+                        coordinator,
+                        key_id,
+                        "cached_tokens",
+                        "cached tokens",
+                        "mdi:database-arrow-right-outline",
+                    ),
+                ]
+            )
+
+        model_metrics = (
+            ("input_tokens", "input tokens", "mdi:arrow-down-bold-box-outline"),
+            ("output_tokens", "output tokens", "mdi:arrow-up-bold-box-outline"),
+            ("cached_tokens", "cached tokens", "mdi:database-arrow-right-outline"),
+        )
+        for model_name in model_usage:
+            if not isinstance(model_name, str) or model_name in created_model_sensors:
+                continue
+            created_model_sensors.add(model_name)
+            for metric_key, metric_label, metric_icon in model_metrics:
+                new_entities.append(
+                    CLIProxyAPIModelTokenSensor(
+                        entry,
+                        coordinator,
+                        model_name,
+                        metric_key,
+                        metric_label,
+                        metric_icon,
+                    )
+                )
 
         if new_entities:
             async_add_entities(new_entities)
@@ -252,12 +324,7 @@ class CLIProxyAPIKeyUsageSensor(CLIProxyAPIEntity, SensorEntity):
     def native_value(self) -> StateType:
         """Return request count for this key."""
         data = self.coordinator.data or {}
-        usage = data.get("key_usage", {})
-        if not isinstance(usage, dict):
-            return 0
-        key_data = usage.get(self._key_id, {})
-        if not isinstance(key_data, dict):
-            return 0
+        key_data = _get_key_usage_entry(data, self._key_id)
         value = key_data.get("requests", 0)
         return int(value) if isinstance(value, int) else 0
 
@@ -265,8 +332,7 @@ class CLIProxyAPIKeyUsageSensor(CLIProxyAPIEntity, SensorEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return extended usage metrics for this key."""
         data = self.coordinator.data or {}
-        usage = data.get("key_usage", {})
-        key_data = usage.get(self._key_id, {}) if isinstance(usage, dict) else {}
+        key_data = _get_key_usage_entry(data, self._key_id)
 
         requests = int(key_data.get("requests", 0)) if isinstance(key_data, dict) else 0
         failed = int(key_data.get("failed", 0)) if isinstance(key_data, dict) else 0
@@ -276,4 +342,167 @@ class CLIProxyAPIKeyUsageSensor(CLIProxyAPIEntity, SensorEntity):
             "tokens": tokens,
             "failed_requests": failed,
             "success_requests": max(requests - failed, 0),
+        }
+
+
+class CLIProxyAPIKeyTokenSensor(CLIProxyAPIEntity, SensorEntity):
+    """Per-key used token counter derived from usage details auth_index data."""
+
+    _attr_has_entity_name = True
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_icon = "mdi:alphabetical-variant"
+    _attr_native_unit_of_measurement = "tokens"
+    _attr_state_class = SensorStateClass.TOTAL
+
+    def __init__(
+        self,
+        entry: ConfigEntry,
+        coordinator: CLIProxyAPIDataUpdateCoordinator,
+        key_id: str,
+    ) -> None:
+        """Initialize per-key used token sensor."""
+        key_fragment = _sanitize_unique_fragment(key_id)
+        super().__init__(entry, coordinator, f"key_usage_{key_fragment}_tokens")
+        self._key_id = key_id
+        self._attr_name = f"Key {key_id[:8]} used tokens"
+
+    @property
+    def native_value(self) -> StateType:
+        """Return used token count for this key."""
+        data = self.coordinator.data or {}
+        key_data = _get_key_usage_entry(data, self._key_id)
+        value = key_data.get("tokens", 0)
+        return int(value) if isinstance(value, int) else 0
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return additional counters for this key."""
+        data = self.coordinator.data or {}
+        key_data = _get_key_usage_entry(data, self._key_id)
+        requests = int(key_data.get("requests", 0)) if isinstance(key_data, dict) else 0
+        failed = int(key_data.get("failed", 0)) if isinstance(key_data, dict) else 0
+        return {
+            "auth_index": self._key_id,
+            "requests": requests,
+            "failed_requests": failed,
+            "success_requests": max(requests - failed, 0),
+            "input_tokens": int(key_data.get("input_tokens", 0))
+            if isinstance(key_data, dict)
+            else 0,
+            "output_tokens": int(key_data.get("output_tokens", 0))
+            if isinstance(key_data, dict)
+            else 0,
+            "cached_tokens": int(key_data.get("cached_tokens", 0))
+            if isinstance(key_data, dict)
+            else 0,
+        }
+
+
+class CLIProxyAPIKeyTokenSpendSensor(CLIProxyAPIEntity, SensorEntity):
+    """Per-key token spend sensor for input/output/cache tokens."""
+
+    _attr_has_entity_name = True
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_native_unit_of_measurement = "tokens"
+    _attr_state_class = SensorStateClass.TOTAL
+
+    def __init__(
+        self,
+        entry: ConfigEntry,
+        coordinator: CLIProxyAPIDataUpdateCoordinator,
+        key_id: str,
+        metric_key: str,
+        metric_label: str,
+        icon: str,
+    ) -> None:
+        """Initialize per-key token spend sensor."""
+        key_fragment = _sanitize_unique_fragment(key_id)
+        super().__init__(entry, coordinator, f"key_usage_{key_fragment}_{metric_key}")
+        self._key_id = key_id
+        self._metric_key = metric_key
+        self._attr_name = f"Key {key_id[:8]} {metric_label}"
+        self._attr_icon = icon
+
+    @property
+    def native_value(self) -> StateType:
+        """Return token spend value for this key/metric."""
+        data = self.coordinator.data or {}
+        key_data = _get_key_usage_entry(data, self._key_id)
+        value = key_data.get(self._metric_key, 0)
+        return int(value) if isinstance(value, int) else 0
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return companion usage counters for this key."""
+        data = self.coordinator.data or {}
+        key_data = _get_key_usage_entry(data, self._key_id)
+        return {
+            "auth_index": self._key_id,
+            "requests": int(key_data.get("requests", 0))
+            if isinstance(key_data, dict)
+            else 0,
+            "total_tokens": int(key_data.get("tokens", 0))
+            if isinstance(key_data, dict)
+            else 0,
+            "failed_requests": int(key_data.get("failed", 0))
+            if isinstance(key_data, dict)
+            else 0,
+        }
+
+
+class CLIProxyAPIModelTokenSensor(CLIProxyAPIEntity, SensorEntity):
+    """Per-model token spend sensor (input/output/cache)."""
+
+    _attr_has_entity_name = True
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_native_unit_of_measurement = "tokens"
+    _attr_state_class = SensorStateClass.TOTAL
+
+    def __init__(
+        self,
+        entry: ConfigEntry,
+        coordinator: CLIProxyAPIDataUpdateCoordinator,
+        model_name: str,
+        metric_key: str,
+        metric_label: str,
+        icon: str,
+    ) -> None:
+        """Initialize per-model token spend sensor."""
+        model_fragment = _sanitize_unique_fragment(model_name)
+        super().__init__(entry, coordinator, f"model_{model_fragment}_{metric_key}")
+        self._model_name = model_name
+        self._metric_key = metric_key
+        self._attr_name = f"Model {model_name} {metric_label}"
+        self._attr_icon = icon
+
+    @property
+    def native_value(self) -> StateType:
+        """Return token spend value for this model/metric."""
+        data = self.coordinator.data or {}
+        model_data = _get_model_usage_entry(data, self._model_name)
+        value = model_data.get(self._metric_key, 0)
+        return int(value) if isinstance(value, int) else 0
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return companion token counters for this model."""
+        data = self.coordinator.data or {}
+        model_data = _get_model_usage_entry(data, self._model_name)
+        return {
+            "model": self._model_name,
+            "requests": int(model_data.get("requests", 0))
+            if isinstance(model_data, dict)
+            else 0,
+            "total_tokens": int(model_data.get("total_tokens", 0))
+            if isinstance(model_data, dict)
+            else 0,
+            "input_tokens": int(model_data.get("input_tokens", 0))
+            if isinstance(model_data, dict)
+            else 0,
+            "output_tokens": int(model_data.get("output_tokens", 0))
+            if isinstance(model_data, dict)
+            else 0,
+            "cached_tokens": int(model_data.get("cached_tokens", 0))
+            if isinstance(model_data, dict)
+            else 0,
         }

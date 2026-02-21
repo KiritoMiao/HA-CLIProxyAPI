@@ -84,13 +84,118 @@ sections:
           numeric: true
           reverse: true
         show_empty: false
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: Per-key used tokens (auto)
+          show_header_toggle: false
+        filter:
+          include:
+            - entity_id: sensor.cliproxyapi_key_*_tokens
+          exclude: []
+        sort:
+          method: state
+          numeric: true
+          reverse: true
+        show_empty: false
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: Per-key input tokens (auto)
+          show_header_toggle: false
+        filter:
+          include:
+            - entity_id: sensor.cliproxyapi_key_*_input_tokens
+          exclude: []
+        sort:
+          method: state
+          numeric: true
+          reverse: true
+        show_empty: false
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: Per-key output tokens (auto)
+          show_header_toggle: false
+        filter:
+          include:
+            - entity_id: sensor.cliproxyapi_key_*_output_tokens
+          exclude: []
+        sort:
+          method: state
+          numeric: true
+          reverse: true
+        show_empty: false
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: Per-key cached tokens (auto)
+          show_header_toggle: false
+        filter:
+          include:
+            - entity_id: sensor.cliproxyapi_key_*_cached_tokens
+          exclude: []
+        sort:
+          method: state
+          numeric: true
+          reverse: true
+        show_empty: false
       - type: markdown
         content: |
           Add your dynamic per-key sensors below after they appear in Home Assistant.
           Example entity IDs:
 
           - `sensor.cliproxyapi_key_a1b2c3d4_requests`
+          - `sensor.cliproxyapi_key_a1b2c3d4_tokens`
+          - `sensor.cliproxyapi_key_a1b2c3d4_input_tokens`
+          - `sensor.cliproxyapi_key_a1b2c3d4_output_tokens`
+          - `sensor.cliproxyapi_key_a1b2c3d4_cached_tokens`
           - `sensor.cliproxyapi_key_ffeeddcc_requests`
+
+      - type: heading
+        heading: Per-Model Token Spend
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: Model input tokens (auto)
+          show_header_toggle: false
+        filter:
+          include:
+            - entity_id: sensor.cliproxyapi_model_*_input_tokens
+          exclude: []
+        sort:
+          method: state
+          numeric: true
+          reverse: true
+        show_empty: false
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: Model output tokens (auto)
+          show_header_toggle: false
+        filter:
+          include:
+            - entity_id: sensor.cliproxyapi_model_*_output_tokens
+          exclude: []
+        sort:
+          method: state
+          numeric: true
+          reverse: true
+        show_empty: false
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: Model cached tokens (auto)
+          show_header_toggle: false
+        filter:
+          include:
+            - entity_id: sensor.cliproxyapi_model_*_cached_tokens
+          exclude: []
+        sort:
+          method: state
+          numeric: true
+          reverse: true
+        show_empty: false
 
   - type: grid
     cards:

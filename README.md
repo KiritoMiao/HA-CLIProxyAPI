@@ -77,12 +77,34 @@ Open integration **Configure** to set:
 The integration builds per-key usage metrics from `auth_index` in usage details.
 
 - Creates a summary sensor: `Tracked key usage entries`
-- Creates one diagnostic sensor per discovered key with request count as state
+- Creates two diagnostic sensors per discovered key:
+  - request count (`..._requests`)
+  - used token count (`..._tokens`)
+- Creates per-key token spend sensors:
+  - `..._input_tokens`
+  - `..._output_tokens`
+  - `..._cached_tokens`
 - Per-key sensor attributes include:
   - `auth_index`
-  - `tokens`
+  - `tokens` / `requests` / `input_tokens` / `output_tokens` / `cached_tokens`
   - `failed_requests`
   - `success_requests`
+
+## Per-Model Token Spend Status
+
+The integration also creates per-model token spend sensors from usage details.
+
+- Dynamic sensors per discovered model:
+  - `..._input_tokens`
+  - `..._output_tokens`
+  - `..._cached_tokens`
+- Each sensor includes model-level attributes:
+  - `model`
+  - `requests`
+  - `total_tokens`
+  - `input_tokens`
+  - `output_tokens`
+  - `cached_tokens`
 
 ## Lovelace Usage Card
 
