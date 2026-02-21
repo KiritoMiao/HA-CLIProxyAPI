@@ -1,11 +1,11 @@
 {
   "domain": "cliproxyapi",
-  "name": "CLIProxyAPI",
+  "name": "CLIProxyAPI Home Assistant",
   "version": "0.1.0",
-  "documentation": "https://raw.githubusercontent.com/router-for-me/CLIProxyAPIDocs/refs/heads/main/docs/en/management/api.md",
-  "issue_tracker": "https://github.com/router-for-me/CLIProxyAPI/issues",
+  "documentation": "https://github.com/KiritoMiao/HA-CLIProxyAPI",
+  "issue_tracker": "https://github.com/KiritoMiao/HA-CLIProxyAPI/issues",
   "codeowners": [
-    "@router-for-me"
+    "@KiritoMiao"
   ],
   "config_flow": true,
   "integration_type": "hub",
