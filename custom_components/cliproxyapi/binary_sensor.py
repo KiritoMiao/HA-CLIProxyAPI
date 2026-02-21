@@ -7,10 +7,10 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DATA_COORDINATOR, DOMAIN
 from .coordinator import CLIProxyAPIDataUpdateCoordinator
+from .entity import CLIProxyAPIEntity
 
 
 async def async_setup_entry(
@@ -22,12 +22,10 @@ async def async_setup_entry(
     coordinator: CLIProxyAPIDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id][
         DATA_COORDINATOR
     ]
-    async_add_entities([CLIProxyAPIReachableBinarySensor(coordinator, entry.entry_id)])
+    async_add_entities([CLIProxyAPIReachableBinarySensor(entry, coordinator)])
 
 
-class CLIProxyAPIReachableBinarySensor(
-    CoordinatorEntity[CLIProxyAPIDataUpdateCoordinator], BinarySensorEntity
-):
+class CLIProxyAPIReachableBinarySensor(CLIProxyAPIEntity, BinarySensorEntity):
     """Indicates if Home Assistant can currently reach CLIProxyAPI."""
 
     _attr_has_entity_name = True
@@ -37,11 +35,10 @@ class CLIProxyAPIReachableBinarySensor(
     _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def __init__(
-        self, coordinator: CLIProxyAPIDataUpdateCoordinator, entry_id: str
+        self, entry: ConfigEntry, coordinator: CLIProxyAPIDataUpdateCoordinator
     ) -> None:
         """Initialize reachability entity."""
-        super().__init__(coordinator)
-        self._attr_unique_id = f"{entry_id}_reachable"
+        super().__init__(entry, coordinator, "reachable")
 
     @property
     def is_on(self) -> bool:

@@ -17,10 +17,10 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DATA_COORDINATOR, DOMAIN
 from .coordinator import CLIProxyAPIDataUpdateCoordinator
+from .entity import CLIProxyAPIEntity
 
 
 def _timestamp_or_none(data: dict[str, Any]) -> datetime | None:
@@ -165,7 +165,7 @@ async def async_setup_entry(
         DATA_COORDINATOR
     ]
     async_add_entities(
-        CLIProxyAPISensor(coordinator, entry.entry_id, description)
+        CLIProxyAPISensor(entry, coordinator, description)
         for description in SENSOR_DESCRIPTIONS
     )
 
@@ -183,9 +183,7 @@ async def async_setup_entry(
             if not isinstance(key_id, str) or key_id in created_key_sensors:
                 continue
             created_key_sensors.add(key_id)
-            new_entities.append(
-                CLIProxyAPIKeyUsageSensor(coordinator, entry.entry_id, key_id)
-            )
+            new_entities.append(CLIProxyAPIKeyUsageSensor(entry, coordinator, key_id))
 
         if new_entities:
             async_add_entities(new_entities)
@@ -196,9 +194,7 @@ async def async_setup_entry(
     )
 
 
-class CLIProxyAPISensor(
-    CoordinatorEntity[CLIProxyAPIDataUpdateCoordinator], SensorEntity
-):
+class CLIProxyAPISensor(CLIProxyAPIEntity, SensorEntity):
     """Representation of CLIProxyAPI sensor entities."""
 
     entity_description: CLIProxyAPISensorDescription
@@ -207,14 +203,13 @@ class CLIProxyAPISensor(
 
     def __init__(
         self,
+        entry: ConfigEntry,
         coordinator: CLIProxyAPIDataUpdateCoordinator,
-        entry_id: str,
         description: CLIProxyAPISensorDescription,
     ) -> None:
         """Initialize sensor entity."""
-        super().__init__(coordinator)
+        super().__init__(entry, coordinator, description.key)
         self.entity_description = description
-        self._attr_unique_id = f"{entry_id}_{description.key}"
 
     @property
     def available(self) -> bool:
@@ -232,9 +227,7 @@ class CLIProxyAPISensor(
         return self.entity_description.value_fn(data)
 
 
-class CLIProxyAPIKeyUsageSensor(
-    CoordinatorEntity[CLIProxyAPIDataUpdateCoordinator], SensorEntity
-):
+class CLIProxyAPIKeyUsageSensor(CLIProxyAPIEntity, SensorEntity):
     """Per-key usage sensor derived from usage details auth_index data."""
 
     _attr_has_entity_name = True
@@ -245,17 +238,15 @@ class CLIProxyAPIKeyUsageSensor(
 
     def __init__(
         self,
+        entry: ConfigEntry,
         coordinator: CLIProxyAPIDataUpdateCoordinator,
-        entry_id: str,
         key_id: str,
     ) -> None:
         """Initialize per-key usage sensor."""
-        super().__init__(coordinator)
+        key_fragment = _sanitize_unique_fragment(key_id)
+        super().__init__(entry, coordinator, f"key_usage_{key_fragment}_requests")
         self._key_id = key_id
         self._attr_name = f"Key {key_id[:8]} requests"
-        self._attr_unique_id = (
-            f"{entry_id}_key_usage_{_sanitize_unique_fragment(key_id)}_requests"
-        )
 
     @property
     def native_value(self) -> StateType:

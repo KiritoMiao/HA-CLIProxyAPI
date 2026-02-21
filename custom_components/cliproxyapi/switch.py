@@ -10,11 +10,11 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .api import CLIProxyAPIClient
 from .const import DATA_API_CLIENT, DATA_COORDINATOR, DOMAIN
 from .coordinator import CLIProxyAPIDataUpdateCoordinator
+from .entity import CLIProxyAPIEntity
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -97,14 +97,12 @@ async def async_setup_entry(
     api: CLIProxyAPIClient = runtime[DATA_API_CLIENT]
 
     async_add_entities(
-        CLIProxyAPISwitch(coordinator, api, entry.entry_id, description)
+        CLIProxyAPISwitch(entry, coordinator, api, description)
         for description in SWITCH_DESCRIPTIONS
     )
 
 
-class CLIProxyAPISwitch(
-    CoordinatorEntity[CLIProxyAPIDataUpdateCoordinator], SwitchEntity
-):
+class CLIProxyAPISwitch(CLIProxyAPIEntity, SwitchEntity):
     """Representation of CLIProxyAPI switches."""
 
     entity_description: CLIProxyAPISwitchDescription
@@ -113,16 +111,15 @@ class CLIProxyAPISwitch(
 
     def __init__(
         self,
+        entry: ConfigEntry,
         coordinator: CLIProxyAPIDataUpdateCoordinator,
         api: CLIProxyAPIClient,
-        entry_id: str,
         description: CLIProxyAPISwitchDescription,
     ) -> None:
         """Initialize switch."""
-        super().__init__(coordinator)
+        super().__init__(entry, coordinator, description.key)
         self._api = api
         self.entity_description = description
-        self._attr_unique_id = f"{entry_id}_{description.key}"
 
     @property
     def is_on(self) -> bool:

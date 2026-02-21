@@ -15,6 +15,7 @@ Supported controls are limited to safe runtime toggles and numeric retry setting
 
 ## Features
 
+- Groups all entities from one configured CLIProxyAPI site under a single Home Assistant device
 - Connectivity and usage sensors (`/usage`, `/latest-version`)
 - Per-key usage aggregation (derived from `usage.apis.*.models.*.details[].auth_index`)
 - Runtime switches:
@@ -129,6 +130,16 @@ Install **Auto Entities** via HACS (Lovelace plugin):
 If you do not want to install it, remove the `type: custom:auto-entities` cards and keep the static entities cards.
 
 ## Development
+
+Install development dependencies:
+
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+```
+
+`requirements.txt` includes `autopep8` for code formatting.
 
 Local checks used in this repository:
 
