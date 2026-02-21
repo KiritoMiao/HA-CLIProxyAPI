@@ -1,0 +1,106 @@
+title: CLIProxyAPI
+path: cliproxyapi
+icon: mdi:server-network
+type: sections
+max_columns: 4
+sections:
+  - type: grid
+    cards:
+      - type: heading
+        heading: Service Health
+      - type: tile
+        entity: binary_sensor.cliproxyapi_reachable
+      - type: tile
+        entity: sensor.cliproxyapi_latest_upstream_version
+      - type: tile
+        entity: sensor.cliproxyapi_error_rate
+      - type: tile
+        entity: sensor.cliproxyapi_total_requests
+      - type: tile
+        entity: sensor.cliproxyapi_failed_requests
+      - type: tile
+        entity: sensor.cliproxyapi_total_tokens
+
+  - type: grid
+    cards:
+      - type: heading
+        heading: Runtime Controls
+      - type: entities
+        show_header_toggle: false
+        entities:
+          - switch.cliproxyapi_debug_mode
+          - switch.cliproxyapi_log_to_file
+          - switch.cliproxyapi_usage_statistics
+          - switch.cliproxyapi_request_log
+          - switch.cliproxyapi_websocket_auth
+          - switch.cliproxyapi_switch_project_on_quota_exceeded
+          - switch.cliproxyapi_switch_preview_model_on_quota_exceeded
+          - number.cliproxyapi_request_retry_count
+          - number.cliproxyapi_max_retry_interval
+          - button.cliproxyapi_refresh_data
+
+  - type: grid
+    cards:
+      - type: heading
+        heading: Traffic Trends
+      - type: history-graph
+        title: Requests and Tokens (24h)
+        hours_to_show: 24
+        entities:
+          - sensor.cliproxyapi_total_requests
+          - sensor.cliproxyapi_failed_requests
+          - sensor.cliproxyapi_total_tokens
+      - type: gauge
+        entity: sensor.cliproxyapi_error_rate
+        name: Error Rate
+        min: 0
+        max: 100
+        needle: true
+        severity:
+          green: 0
+          yellow: 5
+          red: 15
+
+  - type: grid
+    cards:
+      - type: heading
+        heading: Per-Key Usage
+      - type: entities
+        title: Discovered key usage entries
+        show_header_toggle: false
+        entities:
+          - sensor.cliproxyapi_tracked_key_usage_entries
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: Per-key requests (auto)
+          show_header_toggle: false
+        filter:
+          include:
+            - entity_id: sensor.cliproxyapi_key_*_requests
+          exclude: []
+        sort:
+          method: state
+          numeric: true
+          reverse: true
+        show_empty: false
+      - type: markdown
+        content: |
+          Add your dynamic per-key sensors below after they appear in Home Assistant.
+          Example entity IDs:
+
+          - `sensor.cliproxyapi_key_a1b2c3d4_requests`
+          - `sensor.cliproxyapi_key_ffeeddcc_requests`
+
+  - type: grid
+    cards:
+      - type: heading
+        heading: Optional Diagnostics
+      - type: entities
+        title: Enable first in integration options
+        show_header_toggle: false
+        entities:
+          - sensor.cliproxyapi_log_line_count
+          - sensor.cliproxyapi_latest_log_timestamp
+          - sensor.cliproxyapi_request_error_log_files
+          - button.cliproxyapi_clear_log_files

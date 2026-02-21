@@ -1,0 +1,39 @@
+type: vertical-stack
+cards:
+  - type: entities
+    title: CLIProxyAPI Status
+    show_header_toggle: false
+    entities:
+      - entity: binary_sensor.cliproxyapi_reachable
+      - entity: sensor.cliproxyapi_latest_upstream_version
+      - entity: sensor.cliproxyapi_tracked_key_usage_entries
+
+  - type: gauge
+    entity: sensor.cliproxyapi_error_rate
+    name: Error Rate
+    min: 0
+    max: 100
+    needle: true
+    severity:
+      green: 0
+      yellow: 5
+      red: 15
+
+  - type: history-graph
+    title: Requests and Tokens (24h)
+    hours_to_show: 24
+    entities:
+      - entity: sensor.cliproxyapi_total_requests
+      - entity: sensor.cliproxyapi_total_tokens
+      - entity: sensor.cliproxyapi_failed_requests
+
+  - type: entities
+    title: Runtime Controls
+    show_header_toggle: false
+    entities:
+      - entity: switch.cliproxyapi_debug_mode
+      - entity: switch.cliproxyapi_log_to_file
+      - entity: switch.cliproxyapi_usage_statistics
+      - entity: number.cliproxyapi_request_retry_count
+      - entity: number.cliproxyapi_max_retry_interval
+      - entity: button.cliproxyapi_refresh_data

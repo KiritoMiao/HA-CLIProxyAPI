@@ -1,0 +1,118 @@
+{
+  "title": "CLIProxyAPI",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to CLIProxyAPI",
+        "description": "Add the base URL and management key for the Management API.",
+        "data": {
+          "base_url": "Base URL",
+          "management_key": "Management key"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect",
+      "invalid_auth": "Invalid management key",
+      "invalid_url": "Invalid base URL",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This CLIProxyAPI server is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "CLIProxyAPI options",
+        "description": "Adjust polling and optional diagnostics collection.",
+        "data": {
+          "poll_interval_seconds": "Polling interval (seconds)",
+          "enable_log_diagnostics": "Enable log diagnostics",
+          "enable_request_error_logs": "Enable request error log diagnostics"
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "reachable": {
+        "name": "Reachable"
+      }
+    },
+    "sensor": {
+      "total_requests": {
+        "name": "Total requests"
+      },
+      "success_count": {
+        "name": "Success count"
+      },
+      "failure_count": {
+        "name": "Failure count"
+      },
+      "failed_requests": {
+        "name": "Failed requests"
+      },
+      "error_rate": {
+        "name": "Error rate"
+      },
+      "total_tokens": {
+        "name": "Total tokens"
+      },
+      "latest_version": {
+        "name": "Latest upstream version"
+      },
+      "key_usage_entries": {
+        "name": "Tracked key usage entries"
+      },
+      "log_line_count": {
+        "name": "Log line count"
+      },
+      "latest_log_timestamp": {
+        "name": "Latest log timestamp"
+      },
+      "request_error_log_files": {
+        "name": "Request error log files"
+      }
+    },
+    "switch": {
+      "debug": {
+        "name": "Debug mode"
+      },
+      "logging_to_file": {
+        "name": "Log to file"
+      },
+      "usage_statistics_enabled": {
+        "name": "Usage statistics"
+      },
+      "request_log": {
+        "name": "Request log"
+      },
+      "ws_auth": {
+        "name": "WebSocket auth"
+      },
+      "switch_project": {
+        "name": "Switch project on quota exceeded"
+      },
+      "switch_preview_model": {
+        "name": "Switch preview model on quota exceeded"
+      }
+    },
+    "number": {
+      "request_retry": {
+        "name": "Request retry count"
+      },
+      "max_retry_interval": {
+        "name": "Max retry interval"
+      }
+    },
+    "button": {
+      "clear_logs": {
+        "name": "Clear log files"
+      },
+      "refresh": {
+        "name": "Refresh data"
+      }
+    }
+  }
+}

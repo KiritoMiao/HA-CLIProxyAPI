@@ -1,0 +1,83 @@
+{
+  "entity": {
+    "binary_sensor": {
+      "reachable": {
+        "default": "mdi:lan-connect"
+      }
+    },
+    "sensor": {
+      "total_requests": {
+        "default": "mdi:counter"
+      },
+      "success_count": {
+        "default": "mdi:check-circle-outline"
+      },
+      "failure_count": {
+        "default": "mdi:alert-outline"
+      },
+      "failed_requests": {
+        "default": "mdi:alert-circle-outline"
+      },
+      "error_rate": {
+        "default": "mdi:chart-donut"
+      },
+      "total_tokens": {
+        "default": "mdi:database-outline"
+      },
+      "latest_version": {
+        "default": "mdi:tag-outline"
+      },
+      "key_usage_entries": {
+        "default": "mdi:key-chain-variant"
+      },
+      "log_line_count": {
+        "default": "mdi:file-document-outline"
+      },
+      "latest_log_timestamp": {
+        "default": "mdi:clock-outline"
+      },
+      "request_error_log_files": {
+        "default": "mdi:file-alert-outline"
+      }
+    },
+    "switch": {
+      "debug": {
+        "default": "mdi:bug-outline"
+      },
+      "logging_to_file": {
+        "default": "mdi:file-cog-outline"
+      },
+      "usage_statistics_enabled": {
+        "default": "mdi:chart-box-outline"
+      },
+      "request_log": {
+        "default": "mdi:file-document-outline"
+      },
+      "ws_auth": {
+        "default": "mdi:web"
+      },
+      "switch_project": {
+        "default": "mdi:swap-horizontal"
+      },
+      "switch_preview_model": {
+        "default": "mdi:flask-outline"
+      }
+    },
+    "number": {
+      "request_retry": {
+        "default": "mdi:restore-alert"
+      },
+      "max_retry_interval": {
+        "default": "mdi:timer-cog-outline"
+      }
+    },
+    "button": {
+      "clear_logs": {
+        "default": "mdi:delete-sweep-outline"
+      },
+      "refresh": {
+        "default": "mdi:refresh"
+      }
+    }
+  }
+}
