@@ -138,3 +138,18 @@ python3 -m pytest -q
 ```
 
 Note: tests are currently guarded with `pytest.importorskip("homeassistant")` in environments where Home Assistant is not installed.
+
+## HACS Troubleshooting
+
+If HACS shows:
+
+`The version <commit> for this integration can not be used with HACS`
+
+try the following:
+
+1. Ensure the repository is added as **Integration** type in HACS custom repositories.
+2. Update HACS and reload Home Assistant.
+3. Remove this custom repository from HACS and add it again.
+4. In HACS, clear cache/reload resources and retry install.
+
+This repository now includes a root `hacs.json`, which HACS uses to validate metadata.
