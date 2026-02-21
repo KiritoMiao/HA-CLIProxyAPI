@@ -34,6 +34,26 @@ Supported controls are limited to safe runtime toggles and numeric retry setting
   - logs endpoint polling
   - request-error-log file list polling
 
+## Installation
+
+### Install the integration (HACS)
+
+1. Open HACS in Home Assistant.
+2. Go to **Integrations**.
+3. Add this repository as a custom repository (type: **Integration**).
+4. Search for **CLIProxyAPI** and install it.
+5. Restart Home Assistant.
+6. Go to **Settings -> Devices & Services -> Add Integration** and add **CLIProxyAPI**.
+
+### Optional: install Auto Entities card (for auto per-key lists)
+
+1. Open HACS.
+2. Go to **Frontend**.
+3. Install `thomasloven/lovelace-auto-entities`.
+4. Reload browser cache (or refresh resources).
+
+Without this card installed, remove `type: custom:auto-entities` blocks from `USAGE_VIEW.yaml` and `USAGE_VIEW_MOBILE.yaml`.
+
 ## Configuration
 
 After installing via HACS and restarting Home Assistant:
